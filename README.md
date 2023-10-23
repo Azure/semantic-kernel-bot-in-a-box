@@ -1,14 +1,91 @@
-# Project
+# Semantic Kernel Bot in-a-box
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+Deploy an extensible Semantic Kernel bot to Azure with production level capabilities.
 
-As the maintainer of this project, please make a few updates:
+## Solution Architecture
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+The solution architecture is described in the diagram below. The Data block is not included in this 
+
+![Solution Architecture](./readme_assets/architecture.png)
+
+The flow of messages is as follows:
+
+- End-users connect to a messaging channel your bot is publised to, such as Web, a PowerBI dashboard or Teams;
+- Messages get processed through Azure Bot Services, which communicates with a .NET application running on App Services.
+- The .NET application runs a Semantic Kernel Stepwise Planner at its core. The planner elaborates a series of steps to process the user's request, and then executes it.
+- Each step of the plan is formulated through Azure OpenAI, and the executed against Cognitive Search (traditional RAG pattern) or Azure SQL (structured data RAG).
+- Cognitive search contains an index of hotels, while Azure SQL contains customer data from the AdventureWorksLT sample. Azure OpenAI is responsible for deciding which data source each question gets routed to. Questions may also span multiple data sources. Check out the Examples section for more details.
+
+
+## Pre-requisites
+
+- For running locally:
+    - [Install .NET](https://dotnet.microsoft.com/en-us/download);
+    - [Install Bot Framework Emulator](https://github.com/Microsoft/BotFramework-Emulator);
+
+- For deploying to Azure:
+    - Install Azure CLI
+    - Log into your Azure subscription
+
+    ```
+    az login
+    ```
+
+## Deploy to Azure
+
+
+1. Clone this repository locally: 
+
+```
+git clone https://github.com/Azure/semantic-kernel-bot-in-a-box
+```
+
+2. Create a new resource group
+3. Create a new Multi-Tenant Application Registration and add a Client Secret
+4. In the `infra` directory, look for the file `main.example.bicepparam`. Rename it to `main.bicepparam` and fill out the app information you just generated at the bottom
+5. Deploy resources: 
+```
+cd infra
+az deployment group create --resource-group=YOUR_RG_NAME -f main.bicep --parameters main.bicepparam
+```
+6. Connect Hotels Sample Index on the Azure Cognitive Services instance
+![Cognitive Search Home](./readme_assets/cognitive-search-home.png)
+![Create Cognitive Search Index from Sample](./readme_assets/cognitive-search-index-sample.png)
+7. Deploy bot application to App Services:
+```
+cd src
+rm -r bin obj Archive.zip
+zip -r Archive.zip ./* ./.*
+az webapp deployment source config-zip --resource-group "YOUR_RG_NAME" --name "YOUR_APPSERVICES_NAME" --src "Archive.zip"
+```
+
+## Running Locally (must deploy resources to Azure first)
+
+After running the deployment template, you may also run the application locally for development and debugging.
+
+- Go to the `src` directory and look for the `appsettings.example.json` file. Rename it to `appsettings.json` and fill out the required service credentials and URLs
+- Execute the project:
+```
+    dotnet run
+```
+- Open Bot Framework Emulator and connect to http://localhost:3987/api/messages
+- Don't forget to enable firewall access to any services where it may be restricted. By default, SQL Server will disable public connections.
+
+
+## Debugging intermediate thoughts
+
+This project comes with a built-in debug tool that can output the Semantic Kernel Planner's intermediate steps, such as thoughts, actions and observations. You may turn on this feature by switching the DEBUG environment variable to "true".
+
+## Developing your own plugins
+
+This project comes with two plugins, which may be found in the Plugins/ directory. You may use these plugins as examples when developing your own plugins.
+
+To create a custom plugin:
+
+- Add a new file to the Plugins directory. Use one of the examples as a template.
+- Add your code to the plugin. Each Semantic Function should contain a top-level description, and a description of each argument, so that Semantic Kernel may understand how to leverage that functionality.
+- Load your plugin in the Bots/SKBot.cs file/
+
 
 ## Contributing
 
