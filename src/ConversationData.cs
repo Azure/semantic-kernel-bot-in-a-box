@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
+using Azure;
 
 namespace Microsoft.BotBuilderSamples
 {
@@ -9,6 +11,15 @@ namespace Microsoft.BotBuilderSamples
     {
         public string Role { get; set; } = null;
         public string Message { get; set; } = null;
+    }
+    public class Attachment 
+    {
+        public List<AttachmentPage> Pages { get; set; } = new List<AttachmentPage>();
+    }
+    public class AttachmentPage 
+    {
+        public string Content { get; set; } = null;
+        public float[] Vector { get; set; } = null;
     }
     // Defines a state property used to track conversation data.
     public class ConversationData
@@ -24,5 +35,9 @@ namespace Microsoft.BotBuilderSamples
 
         // Track conversation history
         public List<ConversationTurn> History = new List<ConversationTurn>();
+
+        // Track attached documents
+        public List<Attachment> Attachments = new List<Attachment>();
+
     }
 }

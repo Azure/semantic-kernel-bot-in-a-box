@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using Azure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Azure.Blobs;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
@@ -31,7 +34,7 @@ namespace Microsoft.BotBuilderSamples
             // Create the storage we'll be using for User and Conversation state.
             // (Memory is great for testing purposes - examples of implementing storage with
             // Azure Blob Storage or Cosmos DB are below).
-            var storage = new MemoryStorage();
+            // var storage = new MemoryStorage();
 
             /* AZURE BLOB STORAGE - Uncomment the code in this section to use Azure blob storage */
                            
@@ -41,14 +44,20 @@ namespace Microsoft.BotBuilderSamples
 
             /* COSMOSDB STORAGE - Uncomment the code in this section to use CosmosDB storage */
 
-            // var cosmosDbStorageOptions = new CosmosDbPartitionedStorageOptions()
-            // {
-            //     CosmosDbEndpoint = "<endpoint-for-your-cosmosdb-instance>",
-            //     AuthKey = "<your-cosmosdb-auth-key>",
-            //     DatabaseId = "<your-database-id>",
-            //     ContainerId = "<cosmosdb-container-id>"
-            // };
-            // var storage = new CosmosDbPartitionedStorage(cosmosDbStorageOptions);
+            IStorage storage;
+            if (Environment.GetEnvironmentVariable("COSMOS_API_ENDPOINT") != null) {
+                var cosmosDbStorageOptions = new CosmosDbPartitionedStorageOptions()
+                {
+                    CosmosDbEndpoint = Environment.GetEnvironmentVariable("COSMOS_API_ENDPOINT"),
+                    TokenCredential = Environment.GetEnvironmentVariable("COSMOS_API_KEY") == null ? new DefaultAzureCredential() : null,
+                    AuthKey = Environment.GetEnvironmentVariable("COSMOS_API_KEY"),
+                    DatabaseId = "SKBot",
+                    ContainerId = "Conversations"
+                };
+                storage = new CosmosDbPartitionedStorage(cosmosDbStorageOptions);
+            } else {
+                storage = new MemoryStorage();
+            }
 
             /* END COSMOSDB STORAGE */
 

@@ -21,6 +21,15 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' =  {
     ]
     databaseAccountOfferType: 'Standard'
   }
+
+  resource db 'sqlDatabases' = {
+    name: 'SKBot'
+    properties: {
+      resource: {
+        id: 'SKBot'
+      }
+    }
+  }
 }
 
 output cosmosAccountID string = cosmosAccount.id

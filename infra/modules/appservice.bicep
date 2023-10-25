@@ -6,6 +6,7 @@ param sku string = 'S1'
 param msaAppPassword string
 param tags object = {}
 param openaiAccountName string
+param documentIntelligenceAccountName string
 param searchAccountName string
 param cosmosAccountName string
 param sqlServerName string
@@ -23,6 +24,10 @@ resource openaiAccount 'Microsoft.CognitiveServices/accounts@2021-10-01' existin
   resource gpt4deployment 'deployments' existing = {
     name: 'gpt-4'
   }
+}
+
+resource documentIntelligenceAccount 'Microsoft.CognitiveServices/accounts@2021-10-01' existing = {
+  name: documentIntelligenceAccountName
 }
 
 resource searchAccount 'Microsoft.Search/searchServices@2022-09-01' existing = {
@@ -95,12 +100,24 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
           value: searchAccount.listQueryKeys().value[0].key
         }
         {
+          name: 'DOCINTEL_API_ENDPOINT'
+          value: documentIntelligenceAccount.properties.endpoint
+        }
+        {
+          name: 'DOCINTEL_API_KEY'
+          value: documentIntelligenceAccount.listKeys().key1
+        }
+        {
           name: 'SQL_CONNECTION_STRING'
           value: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlServer::sqlDB.name};Persist Security Info=False;User ID=${sqlServer.properties.administratorLogin};Password=${msaAppPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
         }
         {
-          name: 'COSMOS_ENDPOINT'
-          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+          name: 'COSMOS_API_ENDPOINT'
+          value: cosmosAccount.properties.documentEndpoint
+        }
+        {
+          name: 'COSMOS_API_KEY'
+          value: cosmosAccount.listKeys().primaryMasterKey
         }
       ]
     }

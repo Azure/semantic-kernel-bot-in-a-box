@@ -1,5 +1,6 @@
 param appServiceName string
 param openaiAccountName string
+param documentIntelligenceAccountName string
 param searchAccountName string
 param cosmosAccountName string
 

@@ -11,15 +11,15 @@ using Newtonsoft.Json;
 public class ThoughtLoggerProvider : ILoggerProvider
 {
     private ITurnContext<IMessageActivity> _turnContext;
-    private IConfiguration _config;
-    public ThoughtLoggerProvider(IConfiguration config, ITurnContext<IMessageActivity> turnContext)
+    private bool _enabled;
+    public ThoughtLoggerProvider(bool enabled, ITurnContext<IMessageActivity> turnContext)
     {
         _turnContext = turnContext;
-        _config = config;
+        _enabled = enabled;
     }
     public ILogger CreateLogger(string categoryName)
     {
-        return new ThoughtLogger(_config, _turnContext);
+        return new ThoughtLogger(_enabled, _turnContext);
     }
 
     public void Dispose() { }
@@ -29,11 +29,11 @@ public class ThoughtLoggerProvider : ILoggerProvider
 public class ThoughtLogger : ILogger
 {
     private ITurnContext<IMessageActivity> _turnContext;
-    private bool _debug;
-    public ThoughtLogger(IConfiguration config, ITurnContext<IMessageActivity> turnContext)
+    private bool _enabled;
+    public ThoughtLogger(bool enabled, ITurnContext<IMessageActivity> turnContext)
     {
         _turnContext = turnContext;
-        _debug = config.GetValue<bool>("DEBUG");
+        _enabled = enabled;
     }
     public IDisposable BeginScope<TState>(TState state)
     {
@@ -42,13 +42,12 @@ public class ThoughtLogger : ILogger
 
     public bool IsEnabled(LogLevel logLevel)
     {
-        return true;
+        return _enabled;
     }
 
     public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
-        if (_debug)
-        {
+        if (_enabled) {
             var json = JsonConvert.DeserializeObject<Dictionary<string, dynamic>[]>(System.Text.Json.JsonSerializer.Serialize(state));
             var action = json.Where(item => item.GetValueOrDefault("Key", null) == "Action").FirstOrDefault()?["Value"];
             var thought = json.Where(item => item.GetValueOrDefault("Key", null) == "Thought").FirstOrDefault()?["Value"];

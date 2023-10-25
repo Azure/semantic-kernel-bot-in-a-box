@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Model;
 using Microsoft.SemanticKernel;
 using System.Linq;
+using Microsoft.BotBuilderSamples;
 
 namespace Plugins;
 
@@ -17,7 +18,7 @@ public class SearchPlugin
 {
     private readonly SearchClient searchClient;
 
-    public SearchPlugin(IConfiguration config) {
+    public SearchPlugin(IConfiguration config, ConversationData conversationData) {
         var _searchApiKey = config.GetValue<string>("SEARCH_API_KEY");
         var _searchApiEndpoint = config.GetValue<string>("SEARCH_API_ENDPOINT");
         var _searchIndex = config.GetValue<string>("SEARCH_INDEX");

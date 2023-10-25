@@ -58,4 +58,22 @@ resource gpt35deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-
   dependsOn: [gpt4deployment]
 }
 
+
+resource adaEmbeddingsdeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+  parent: openaiAccount
+  name: 'text-embedding-ada-002'
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: 'text-embedding-ada-002'
+      version: '2'
+    }
+  }
+  sku: {
+    capacity: 10
+    name: 'Standard'
+  }
+  dependsOn: [gpt4deployment]
+}
+
 output openaiAccountID string = openaiAccount.id

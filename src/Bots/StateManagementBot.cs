@@ -20,6 +20,7 @@ namespace Microsoft.BotBuilderSamples
         {
             _conversationState = conversationState;
             _userState = userState;
+
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
@@ -37,16 +38,15 @@ namespace Microsoft.BotBuilderSamples
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            // Get the state properties from the turn context.
-
+            
             var conversationStateAccessors = _conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
             var conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData());
+
 
             var userStateAccessors = _userState.CreateProperty<UserProfile>(nameof(UserProfile));
             var userProfile = await userStateAccessors.GetAsync(turnContext, () => new UserProfile());
 
             conversationData.History.Add(new ConversationTurn { Role = "user", Message = turnContext.Activity.Text });
-            
 
             var replyText = await ProcessMessage(conversationData, turnContext);
 
@@ -57,6 +57,16 @@ namespace Microsoft.BotBuilderSamples
         public virtual async Task<string> ProcessMessage(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext) {
             await turnContext.SendActivityAsync(JsonSerializer.Serialize(conversationData.History));
             return $"This chat now contains {conversationData.History.Count} messages";
+        }
+
+        public string FormatConversationHistory(ConversationData conversationData) {
+            string history = "";
+            foreach (ConversationTurn conversationTurn in conversationData.History)
+            {
+                history += $"{conversationTurn.Role.ToUpper()}:\n{conversationTurn.Message}\n";
+            }
+            history += "ASSISTANT:";
+            return history;
         }
     }
 }

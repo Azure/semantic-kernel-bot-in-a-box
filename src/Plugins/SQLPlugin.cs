@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Azure.Identity;
+using Microsoft.BotBuilderSamples;
 
 namespace Plugins;
 
@@ -12,7 +13,7 @@ public class SQLPlugin
 {
     private readonly string connectionString;
     private DefaultAzureCredential credential;
-    public SQLPlugin(IConfiguration config) 
+    public SQLPlugin(IConfiguration config, ConversationData conversationData) 
     {
         connectionString = config.GetValue<string>("SQL_CONNECTION_STRING");
         credential = new DefaultAzureCredential();
@@ -21,7 +22,7 @@ public class SQLPlugin
 
 
 
-    [SKFunction, Description("Obtain the table names in AdventureWorksLT, which contains customer and sales data. Always run this before running other queries instead of assuming the user mentioned the correct name.")]
+    [SKFunction, Description("Obtain the table names in AdventureWorksLT, which contains customer and sales data. Always run this before running other queries instead of assuming the user mentioned the correct name. Remember the salesperson information is contained in the Customer table.")]
     public string GetTables(SKContext context) {
         return QueryAsCSV($"SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES;");
     }
@@ -57,15 +58,12 @@ public class SQLPlugin
         {
             // var token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://database.windows.net/.default" }));
             // connection.AccessToken = token.Token;
-            Console.WriteLine("Running SQL Plugin");
 
             SqlCommand command = new SqlCommand(query, connection);
             connection.Open();
             SqlDataReader reader = command.ExecuteReader();
-            Console.WriteLine("Connection Opened");
             try
             {
-                Console.WriteLine("Reading...");
                 for (int i = 0; i < reader.FieldCount; i++) {
                     output += reader.GetName(i);
                     if (i < reader.FieldCount - 1) 

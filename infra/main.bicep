@@ -8,6 +8,7 @@ param tags object
 var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id), 1, 3) 
 var appServiceName = '${prefix}-app-${uniqueSuffix}'
 var openaiAccountName = '${prefix}-openai-${uniqueSuffix}'
+var documentIntelligenceAccountName = '${prefix}-docs-${uniqueSuffix}'
 var searchAccountName = '${prefix}-search-${uniqueSuffix}'
 var cosmosAccountName = '${prefix}-cosmos-${uniqueSuffix}'
 var sqlServerName = '${prefix}-sql-${uniqueSuffix}'
@@ -16,6 +17,15 @@ var sqlDBName = '${prefix}-db-${uniqueSuffix}'
 
 module m_openai 'modules/openai.bicep' = {
   name: 'deploy_openai'
+  params: {
+    resourceLocation: resourceLocation
+    prefix: prefix
+    tags: tags
+  }
+}
+
+module m_docs 'modules/documentIntelligence.bicep' = {
+  name: 'deploy_docs'
   params: {
     resourceLocation: resourceLocation
     prefix: prefix
@@ -61,13 +71,14 @@ module m_app 'modules/appservice.bicep' = {
     msaAppId: msaAppId
     msaAppPassword: msaAppPassword
     openaiAccountName: openaiAccountName
+    documentIntelligenceAccountName: documentIntelligenceAccountName
     searchAccountName: searchAccountName
     cosmosAccountName: cosmosAccountName
     sqlServerName: sqlServerName
     sqlDBName: sqlDBName
   }
   dependsOn: [
-    m_openai, m_cosmos, m_search, m_sql
+    m_openai, m_docs, m_cosmos, m_search, m_sql
   ]
 }
 
@@ -87,10 +98,11 @@ module m_rbac 'modules/rbac.bicep' = {
   params: {
     appServiceName: appServiceName
     openaiAccountName: openaiAccountName
+    documentIntelligenceAccountName: documentIntelligenceAccountName
     searchAccountName: searchAccountName
     cosmosAccountName: cosmosAccountName
   }
   dependsOn: [
-    m_app, m_openai, m_cosmos, m_search, m_sql
+    m_app, m_openai, m_docs, m_cosmos, m_search, m_sql
   ]
 }
