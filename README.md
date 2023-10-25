@@ -63,6 +63,7 @@ az webapp deployment source config-zip --resource-group "YOUR_RG_NAME" --name "Y
 
 8. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
 
+![Test Web Chat](./readme_assets/webchat-test.png)
 
 
 ## Running Locally (must deploy resources to Azure first)
@@ -85,24 +86,26 @@ You may ask about the following topics to test each functionality
 
 1. General knowledge questions
     - Ask about any publicly available knowledge;
-![General quesiton scenario](./readme_assets/./webchat-general.png)
+![General question scenario](./readme_assets/webchat-general.png)
 
 2. Retrieval-augmented generation (SearchPlugin)
     - Ask to look for hotels matching a description;
-![Retrieval-augmented scenario](./readme_assets/./webchat-search.png)
+![Retrieval-augmented scenario](./readme_assets/webchat-search.png)
 
 3. Structured data retrieval (SQLPlugin)
     - Ask about your customers and sales;
-![SQL connection scenario](./readme_assets/./webchat-sql.png)
+![SQL connection scenario](./readme_assets/webchat-sql.png)
 
 4. Upload documents as context (UploadPlugin)
     - Upload a file and ask questions about it;
-![Upload scenario](./readme_assets/./webchat-upload.png)
+![Upload scenario](./readme_assets/webchat-upload.png)
 
 
 ## Debugging intermediate thoughts
 
 This project comes with a built-in debug tool that can output the Semantic Kernel Planner's intermediate steps, such as thoughts, actions and observations. You may turn on this feature by switching the DEBUG environment variable to "true".
+
+![Debugging intermidiate thoughts](./readme_assets/webchat-debug.png)
 
 ## Developing your own plugins
 
