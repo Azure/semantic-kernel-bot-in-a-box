@@ -129,14 +129,7 @@ namespace Microsoft.BotBuilderSamples
 
         private async Task<string> HandleFileUpload(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
         {
-            string endpoint = _docIntelApiEndpoint;
-            string key = _docIntelApiKey;
-            AzureKeyCredential credential = new AzureKeyCredential(key);
-            DocumentAnalysisClient client = new DocumentAnalysisClient(new Uri(endpoint), credential);
-
-            // Does not work locally - use the sample document on the next line to test
             Uri fileUri = new Uri(turnContext.Activity.Attachments.First().ContentUrl);
-            // Uri fileUri = new Uri("https://www.sldttc.org/allpdf/21583473018.pdf");
 
             AnalyzeDocumentOperation operation = await documentAnalysisClient.AnalyzeDocumentFromUriAsync(WaitUntil.Completed, "prebuilt-layout", fileUri);
 
