@@ -88,6 +88,10 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
           value: openaiAccount::gpt4deployment.name
         }
         {
+          name: 'AOAI_API_KEY'
+          value: openaiAccount.listKeys().key1
+        }
+        {
           name: 'SEARCH_API_ENDPOINT'
           value: 'https://${searchAccount.name}.search.windows.net'
         }
