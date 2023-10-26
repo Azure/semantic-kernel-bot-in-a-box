@@ -73,7 +73,7 @@ resource adaEmbeddingsdeployment 'Microsoft.CognitiveServices/accounts/deploymen
     capacity: 10
     name: 'Standard'
   }
-  dependsOn: [gpt4deployment]
+  dependsOn: [gpt35deployment]
 }
 
 output openaiAccountID string = openaiAccount.id
