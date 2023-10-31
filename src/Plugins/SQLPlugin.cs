@@ -12,11 +12,9 @@ namespace Plugins;
 public class SQLPlugin
 {
     private readonly string connectionString;
-    private DefaultAzureCredential credential;
     public SQLPlugin(IConfiguration config, ConversationData conversationData) 
     {
         connectionString = config.GetValue<string>("SQL_CONNECTION_STRING");
-        credential = new DefaultAzureCredential();
     }
 
 
@@ -56,9 +54,6 @@ public class SQLPlugin
         var output = "[DATABASE RESULTS] \n";
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            // var token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://database.windows.net/.default" }));
-            // connection.AccessToken = token.Token;
-
             SqlCommand command = new SqlCommand(query, connection);
             connection.Open();
             SqlDataReader reader = command.ExecuteReader();

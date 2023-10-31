@@ -1,10 +1,10 @@
 # Semantic Kernel Bot in-a-box
 
-Deploy an extensible Semantic Kernel bot to Azure with production level capabilities.
+This project deploys an extensible Semantic Kernel bot template to Azure.
 
 ## Solution Architecture
 
-The solution architecture is described in the diagram below. The Data block is not included in this 
+The solution architecture is described in the diagram below. The Data block is not included in this repository.
 
 ![Solution Architecture](./readme_assets/architecture.png)
 

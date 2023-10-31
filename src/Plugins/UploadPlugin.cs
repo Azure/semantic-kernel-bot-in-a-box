@@ -1,13 +1,7 @@
-using System;
 using System.ComponentModel;
-using Microsoft.SemanticKernel.Orchestration;
 using System.Threading.Tasks;
 using Azure.Identity;
-using Azure.Search.Documents;
-using Azure;
-using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Configuration;
-using Model;
 using Microsoft.SemanticKernel;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -25,9 +19,7 @@ public class UploadPlugin
     {
         var _aoaiApiKey = config.GetValue<string>("AOAI_API_KEY");
         var _aoaiApiEndpoint = config.GetValue<string>("AOAI_API_ENDPOINT");
-        embeddingClient = _aoaiApiKey != null ?
-            new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, _aoaiApiKey) :
-            new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, new DefaultAzureCredential());
+        embeddingClient = new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, _aoaiApiKey);
         _conversationData = conversationData;
     }
 

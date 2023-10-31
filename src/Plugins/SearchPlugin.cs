@@ -22,9 +22,7 @@ public class SearchPlugin
         var _searchApiKey = config.GetValue<string>("SEARCH_API_KEY");
         var _searchApiEndpoint = config.GetValue<string>("SEARCH_API_ENDPOINT");
         var _searchIndex = config.GetValue<string>("SEARCH_INDEX");
-        searchClient = _searchApiKey == null ?
-            new SearchClient(new Uri(_searchApiEndpoint), _searchIndex, new DefaultAzureCredential()) :
-            new SearchClient (new Uri(_searchApiEndpoint), _searchIndex, new AzureKeyCredential(_searchApiKey));
+        searchClient = new SearchClient (new Uri(_searchApiEndpoint), _searchIndex, new AzureKeyCredential(_searchApiKey));
     }
 
     
