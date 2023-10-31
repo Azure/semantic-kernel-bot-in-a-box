@@ -49,7 +49,6 @@ namespace Microsoft.BotBuilderSamples
                 var cosmosDbStorageOptions = new CosmosDbPartitionedStorageOptions()
                 {
                     CosmosDbEndpoint = Environment.GetEnvironmentVariable("COSMOS_API_ENDPOINT"),
-                    TokenCredential = Environment.GetEnvironmentVariable("COSMOS_API_KEY") == null ? new DefaultAzureCredential() : null,
                     AuthKey = Environment.GetEnvironmentVariable("COSMOS_API_KEY"),
                     DatabaseId = "SKBot",
                     ContainerId = "Conversations"

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
@@ -15,12 +16,13 @@ namespace Microsoft.BotBuilderSamples
     {
         private BotState _conversationState;
         private BotState _userState;
+        private int _max_messages;
 
         public StateManagementBot(IConfiguration config, ConversationState conversationState, UserState userState)
         {
             _conversationState = conversationState;
             _userState = userState;
-
+            _max_messages = config.GetValue<int?>("CONVERSATION_HISTORY_MAX_MESSAGES") ?? 10;
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
@@ -52,6 +54,11 @@ namespace Microsoft.BotBuilderSamples
 
             await turnContext.SendActivityAsync(replyText);
             conversationData.History.Add(new ConversationTurn { Role = "assistant", Message = replyText });
+
+            conversationData.History = conversationData.History.GetRange(
+                Math.Max(conversationData.History.Count - _max_messages, 0), 
+                Math.Min(conversationData.History.Count, _max_messages)
+            );
         }
 
         public virtual async Task<string> ProcessMessage(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext) {
@@ -61,7 +68,11 @@ namespace Microsoft.BotBuilderSamples
 
         public string FormatConversationHistory(ConversationData conversationData) {
             string history = "";
-            foreach (ConversationTurn conversationTurn in conversationData.History)
+            List<ConversationTurn> latestMessages = conversationData.History.GetRange(
+                Math.Max(conversationData.History.Count - _max_messages, 0), 
+                Math.Min(conversationData.History.Count, _max_messages)
+            );
+            foreach (ConversationTurn conversationTurn in latestMessages)
             {
                 history += $"{conversationTurn.Role.ToUpper()}:\n{conversationTurn.Message}\n";
             }

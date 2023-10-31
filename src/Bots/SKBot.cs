@@ -9,14 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
-using Azure.Core;
-using Azure.Identity;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Planners;
 using Model;
@@ -38,7 +35,6 @@ namespace Microsoft.BotBuilderSamples
         private ILoggerProvider loggerProvider;
         private bool _debug;
         private IConfiguration _config;
-        private DefaultAzureCredential credential;
         private readonly AzureTextEmbeddingGeneration embeddingClient;
         private readonly DocumentAnalysisClient documentAnalysisClient;
 
@@ -47,11 +43,8 @@ namespace Microsoft.BotBuilderSamples
             _aoaiApiKey = config.GetValue<string>("AOAI_API_KEY");
             _aoaiApiEndpoint = config.GetValue<string>("AOAI_API_ENDPOINT");
             _aoaiModel = config.GetValue<string>("AOAI_MODEL");
-            var defaultCredential = new DefaultAzureCredential();
 
-            embeddingClient = _aoaiApiKey != null ?
-                new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, _aoaiApiKey) :
-                new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, defaultCredential);
+            embeddingClient = new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, _aoaiApiKey);
 
             _docIntelApiKey = config.GetValue<string>("DOCINTEL_API_KEY");
             _docIntelApiEndpoint = config.GetValue<string>("DOCINTEL_API_ENDPOINT");
@@ -74,23 +67,15 @@ namespace Microsoft.BotBuilderSamples
                     .AddDebug();
             });
             
-            kernel = _aoaiApiKey != null ? 
-                new KernelBuilder()
+            kernel = new KernelBuilder()
                     .WithAzureChatCompletionService(
                         deploymentName: _aoaiModel,
                         endpoint: _aoaiApiEndpoint,
                         apiKey: _aoaiApiKey
                     )
                     .WithLoggerFactory(loggerFactory)
-                    .Build() : 
-                new KernelBuilder()
-                    .WithAzureChatCompletionService(
-                        deploymentName: _aoaiModel,
-                        endpoint: _aoaiApiEndpoint,
-                        credentials: credential
-                    )
-                    .WithLoggerFactory(loggerFactory)
                     .Build();
+
             kernel.ImportFunctions(new UploadPlugin(_config, conversationData), "UploadPlugin");
             kernel.ImportFunctions(new SQLPlugin(_config, conversationData), "SQLPlugin");
             kernel.ImportFunctions(new SearchPlugin(_config, conversationData), "SearchPlugin");
