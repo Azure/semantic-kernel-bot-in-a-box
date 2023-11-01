@@ -9,10 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Planners;
@@ -49,7 +51,7 @@ namespace Microsoft.BotBuilderSamples
             _docIntelApiKey = config.GetValue<string>("DOCINTEL_API_KEY");
             _docIntelApiEndpoint = config.GetValue<string>("DOCINTEL_API_ENDPOINT");
 
-            documentAnalysisClient = new DocumentAnalysisClient(new Uri(_docIntelApiEndpoint), new AzureKeyCredential(_docIntelApiKey));
+            if (!_docIntelApiEndpoint.IsNullOrEmpty()) documentAnalysisClient = new DocumentAnalysisClient(new Uri(_docIntelApiEndpoint), new AzureKeyCredential(_docIntelApiKey));
 
             _debug = config.GetValue<bool>("DEBUG");
             _config = config;
@@ -76,9 +78,9 @@ namespace Microsoft.BotBuilderSamples
                     .WithLoggerFactory(loggerFactory)
                     .Build();
 
-            kernel.ImportFunctions(new UploadPlugin(_config, conversationData), "UploadPlugin");
-            kernel.ImportFunctions(new SQLPlugin(_config, conversationData), "SQLPlugin");
-            kernel.ImportFunctions(new SearchPlugin(_config, conversationData), "SearchPlugin");
+            if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new UploadPlugin(_config, conversationData), "UploadPlugin");
+            if (!_config.GetValue<string>("SQL_CONNECTION_STRING").IsNullOrEmpty()) kernel.ImportFunctions(new SQLPlugin(_config, conversationData), "SQLPlugin");
+            if (!_config.GetValue<string>("SEARCH_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new SearchPlugin(_config, conversationData), "SearchPlugin");
             return kernel;
         }
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
@@ -91,7 +93,10 @@ namespace Microsoft.BotBuilderSamples
             // Handle file uploads
             if (turnContext.Activity.Attachments?.Count > 0)
             {
-                return await HandleFileUpload(conversationData, turnContext);
+                if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty())
+                    return await HandleFileUpload(conversationData, turnContext);
+                else
+                    return "Document upload not supported as no Document Intelligence endpoint was provided";
             }
 
             kernel = GetKernel(conversationData, turnContext);

@@ -10,5 +10,9 @@ param tags = {
   Toolkit: 'Bicep'
 }
 
+param deployDocIntel = true
+param deploySearch = true
+param deploySQL = true
+
 param msaAppId = 'YOUR_APP_ID'
 param msaAppPassword = 'YOUR_APP_SECRET'

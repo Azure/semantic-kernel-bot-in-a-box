@@ -43,7 +43,7 @@ git clone https://github.com/Azure/semantic-kernel-bot-in-a-box
 
 2. Create a new resource group
 3. Create a new Multi-Tenant Application Registration and add a Client Secret
-4. In the `infra` directory, look for the file `main.example.bicepparam`. Rename it to `main.bicepparam` and fill out the app information you just generated at the bottom
+4. In the `infra` directory, look for the file `main.example.bicepparam`. Rename it to `main.bicepparam` and fill out the app information you just generated at the bottom. In this step, you may also disable the creation of Document Intelligence, Cognitive Search and Azure SQL. Keep in mind disabling these resources will also disable their respective plugins on the application.
 5. Deploy resources: 
 ```
 cd infra

@@ -5,6 +5,10 @@ param msaAppId string
 param msaAppPassword string
 param tags object
 
+param deploySQL bool = true
+param deploySearch bool = true
+param deployDocIntel bool = true
+
 var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id), 1, 3) 
 var appServiceName = '${prefix}-app-${uniqueSuffix}'
 var openaiAccountName = '${prefix}-openai-${uniqueSuffix}'
@@ -24,7 +28,7 @@ module m_openai 'modules/openai.bicep' = {
   }
 }
 
-module m_docs 'modules/documentIntelligence.bicep' = {
+module m_docs 'modules/documentIntelligence.bicep' = if (deployDocIntel) {
   name: 'deploy_docs'
   params: {
     resourceLocation: resourceLocation
@@ -33,12 +37,23 @@ module m_docs 'modules/documentIntelligence.bicep' = {
   }
 }
 
-module m_search 'modules/searchService.bicep' = {
+module m_search 'modules/searchService.bicep' = if (deploySearch) {
   name: 'deploy_search'
   params: {
     resourceLocation: resourceLocation
     prefix: prefix
     tags: tags
+  }
+}
+
+module m_sql 'modules/sql.bicep' = if (deploySQL) {
+  name: 'deploy_sql'
+  params: {
+    resourceLocation: resourceLocation
+    prefix: prefix
+    tags: tags
+    sqlAdminLogin: msaAppId
+    sqlAdminPassword: msaAppPassword
   }
 }
 
@@ -48,17 +63,6 @@ module m_cosmos 'modules/cosmos.bicep' = {
     resourceLocation: resourceLocation
     prefix: prefix
     tags: tags
-  }
-}
-
-module m_sql 'modules/sql.bicep' = {
-  name: 'deploy_sql'
-  params: {
-    resourceLocation: resourceLocation
-    prefix: prefix
-    tags: tags
-    sqlAdminLogin: msaAppId
-    sqlAdminPassword: msaAppPassword
   }
 }
 
@@ -76,6 +80,9 @@ module m_app 'modules/appservice.bicep' = {
     cosmosAccountName: cosmosAccountName
     sqlServerName: sqlServerName
     sqlDBName: sqlDBName
+    deploySQL: deploySQL
+    deploySearch: deploySearch
+    deployDocIntel: deployDocIntel
   }
   dependsOn: [
     m_openai, m_docs, m_cosmos, m_search, m_sql
@@ -93,16 +100,16 @@ module m_bot 'modules/botservice.bicep' = {
   }
 }
 
-module m_rbac 'modules/rbac.bicep' = {
-  name: 'deploy_rbac'
-  params: {
-    appServiceName: appServiceName
-    openaiAccountName: openaiAccountName
-    documentIntelligenceAccountName: documentIntelligenceAccountName
-    searchAccountName: searchAccountName
-    cosmosAccountName: cosmosAccountName
-  }
-  dependsOn: [
-    m_app, m_openai, m_docs, m_cosmos, m_search, m_sql
-  ]
-}
+// module m_rbac 'modules/rbac.bicep' = {
+//   name: 'deploy_rbac'
+//   params: {
+//     appServiceName: appServiceName
+//     openaiAccountName: openaiAccountName
+//     documentIntelligenceAccountName: documentIntelligenceAccountName
+//     searchAccountName: searchAccountName
+//     cosmosAccountName: cosmosAccountName
+//   }
+//   dependsOn: [
+//     m_app, m_openai, m_docs, m_cosmos, m_search, m_sql
+//   ]
+// }

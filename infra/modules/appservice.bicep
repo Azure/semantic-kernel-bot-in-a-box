@@ -12,6 +12,10 @@ param cosmosAccountName string
 param sqlServerName string
 param sqlDBName string
 
+param deploySQL bool
+param deploySearch bool
+param deployDocIntel bool
+
 var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id), 1, 3)
 var appServicePlanName = '${prefix}-plan-${uniqueSuffix}'
 var appServiceName = '${prefix}-app-${uniqueSuffix}'
@@ -26,11 +30,11 @@ resource openaiAccount 'Microsoft.CognitiveServices/accounts@2021-10-01' existin
   }
 }
 
-resource documentIntelligenceAccount 'Microsoft.CognitiveServices/accounts@2021-10-01' existing = {
+resource documentIntelligenceAccount 'Microsoft.CognitiveServices/accounts@2021-10-01' existing = if (deployDocIntel) {
   name: documentIntelligenceAccountName
 }
 
-resource searchAccount 'Microsoft.Search/searchServices@2022-09-01' existing = {
+resource searchAccount 'Microsoft.Search/searchServices@2022-09-01' existing = if (deploySearch) {
   name: searchAccountName
 }
 
@@ -38,7 +42,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' existi
   name: cosmosAccountName
 }
 
-resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' existing = {
+resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' existing = if (deploySQL) {
   name: sqlServerName
   resource sqlDB 'databases' existing = {
     name: sqlDBName
@@ -93,27 +97,27 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'SEARCH_API_ENDPOINT'
-          value: 'https://${searchAccount.name}.search.windows.net'
+          value: deploySearch ? 'https://${searchAccount.name}.search.windows.net' : ''
         }
         {
           name: 'SEARCH_INDEX'
-          value: 'hotels-sample-index'
+          value: deploySearch ? 'hotels-sample-index' : ''
         }
         {
           name: 'SEARCH_API_KEY'
-          value: searchAccount.listQueryKeys().value[0].key
+          value: deploySearch ? searchAccount.listQueryKeys().value[0].key : ''
         }
         {
           name: 'DOCINTEL_API_ENDPOINT'
-          value: documentIntelligenceAccount.properties.endpoint
+          value: deployDocIntel ? documentIntelligenceAccount.properties.endpoint : ''
         }
         {
           name: 'DOCINTEL_API_KEY'
-          value: documentIntelligenceAccount.listKeys().key1
+          value: deployDocIntel ? documentIntelligenceAccount.listKeys().key1 : ''
         }
         {
           name: 'SQL_CONNECTION_STRING'
-          value: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlServer::sqlDB.name};Persist Security Info=False;User ID=${sqlServer.properties.administratorLogin};Password=${msaAppPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+          value: deploySQL ? 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlServer::sqlDB.name};Persist Security Info=False;User ID=${sqlServer.properties.administratorLogin};Password=${msaAppPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;' : ''
         }
         {
           name: 'COSMOS_API_ENDPOINT'
