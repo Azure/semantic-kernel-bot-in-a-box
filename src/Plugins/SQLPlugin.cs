@@ -1,47 +1,53 @@
 using System;
 using System.ComponentModel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Azure.Identity;
 using Microsoft.BotBuilderSamples;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
+using System.Threading.Tasks;
 
 namespace Plugins;
 
 public class SQLPlugin
 {
     private readonly string connectionString;
-    public SQLPlugin(IConfiguration config, ConversationData conversationData) 
+    private ITurnContext<IMessageActivity> _turnContext;
+    public SQLPlugin(IConfiguration config, ConversationData conversationData, ITurnContext<IMessageActivity> turnContext) 
     {
         connectionString = config.GetValue<string>("SQL_CONNECTION_STRING");
+        _turnContext = turnContext;
     }
 
 
 
 
     [SKFunction, Description("Obtain the table names in AdventureWorksLT, which contains customer and sales data. Always run this before running other queries instead of assuming the user mentioned the correct name. Remember the salesperson information is contained in the Customer table.")]
-    public string GetTables(SKContext context) {
+    public async Task<string> GetTables() {
+        await _turnContext.SendActivityAsync($"Getting tables...");
         return QueryAsCSV($"SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES;");
     }
 
 
 
     [SKFunction, Description("Obtain the database schema for a table in AdventureWorksLT.")]
-    public string GetSchema(
+    public async Task<string> GetSchema(
         [Description("The table to get the schema for. Do not include the schema name.")] string tableName
     ) 
     {
+        await _turnContext.SendActivityAsync($"Getting schema for table \"{tableName}\"...");
         return QueryAsCSV($"SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{tableName}';");
     }
 
 
 
     [SKFunction, Description("Run SQL against the AdventureWorksLT database")]
-    public string RunQuery(
+    public async Task<string> RunQuery(
         [Description("The query to run on SQL Server. When referencing tables, make sure to add the schema names.")] string query
     )
     {
+        await _turnContext.SendActivityAsync($"Running query \"{query}\"...");
         return QueryAsCSV(query);
     }
 
@@ -50,7 +56,6 @@ public class SQLPlugin
 
     private string QueryAsCSV(string query) 
     {
-
         var output = "[DATABASE RESULTS] \n";
         using (SqlConnection connection = new SqlConnection(connectionString))
         {

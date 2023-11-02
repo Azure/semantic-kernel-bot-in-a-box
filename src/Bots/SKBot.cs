@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
@@ -78,9 +78,9 @@ namespace Microsoft.BotBuilderSamples
                     .WithLoggerFactory(loggerFactory)
                     .Build();
 
-            if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new UploadPlugin(_config, conversationData), "UploadPlugin");
-            if (!_config.GetValue<string>("SQL_CONNECTION_STRING").IsNullOrEmpty()) kernel.ImportFunctions(new SQLPlugin(_config, conversationData), "SQLPlugin");
-            if (!_config.GetValue<string>("SEARCH_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new SearchPlugin(_config, conversationData), "SearchPlugin");
+            if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new UploadPlugin(_config, conversationData, turnContext), "UploadPlugin");
+            if (!_config.GetValue<string>("SQL_CONNECTION_STRING").IsNullOrEmpty()) kernel.ImportFunctions(new SQLPlugin(_config, conversationData, turnContext), "SQLPlugin");
+            if (!_config.GetValue<string>("SEARCH_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new SearchPlugin(_config, conversationData, turnContext), "SearchPlugin");
             return kernel;
         }
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
@@ -121,7 +121,16 @@ namespace Microsoft.BotBuilderSamples
         {
             Uri fileUri = new Uri(turnContext.Activity.Attachments.First().ContentUrl);
 
-            AnalyzeDocumentOperation operation = await documentAnalysisClient.AnalyzeDocumentFromUriAsync(WaitUntil.Completed, "prebuilt-layout", fileUri);
+            var httpClient = new HttpClient();
+            var stream = await httpClient.GetStreamAsync(fileUri);
+
+            var ms = new MemoryStream();
+            stream.CopyTo(ms);
+            ms.Position = 0;
+
+            var operation = await documentAnalysisClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", ms);
+            
+            ms.Dispose();
 
             AnalyzeResult result = operation.Value;
 

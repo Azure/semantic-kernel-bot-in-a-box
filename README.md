@@ -34,7 +34,6 @@ The flow of messages is as follows:
 
 ## Deploy to Azure
 
-
 1. Clone this repository locally: 
 
 ```

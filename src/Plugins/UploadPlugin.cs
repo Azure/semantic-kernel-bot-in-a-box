@@ -1,12 +1,13 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using System.Collections.Generic;
 using Microsoft.BotBuilderSamples;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
 
 namespace Plugins;
 
@@ -14,13 +15,15 @@ public class UploadPlugin
 {
     private readonly AzureTextEmbeddingGeneration embeddingClient;
     private ConversationData _conversationData;
+    private ITurnContext<IMessageActivity> _turnContext;
 
-    public UploadPlugin(IConfiguration config, ConversationData conversationData)
+    public UploadPlugin(IConfiguration config, ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
     {
         var _aoaiApiKey = config.GetValue<string>("AOAI_API_KEY");
         var _aoaiApiEndpoint = config.GetValue<string>("AOAI_API_ENDPOINT");
         embeddingClient = new AzureTextEmbeddingGeneration(modelId: "text-embedding-ada-002", _aoaiApiEndpoint, _aoaiApiKey);
         _conversationData = conversationData;
+        _turnContext = turnContext;
     }
 
 
@@ -30,6 +33,7 @@ public class UploadPlugin
         [Description("The text to search by similarity")] string query
     )
     {
+        await _turnContext.SendActivityAsync($"Searching uploaded document for \"{query}\"...");
         var embedding = await embeddingClient.GenerateEmbeddingsAsync(new List<string> { query });
         var vector = embedding.First().ToArray();
         var similarities = new List<float>();

@@ -1,8 +1,6 @@
 using System;
 using System.ComponentModel;
-using Microsoft.SemanticKernel.Orchestration;
 using System.Threading.Tasks;
-using Azure.Identity;
 using Azure.Search.Documents;
 using Azure;
 using Azure.Search.Documents.Models;
@@ -11,18 +9,22 @@ using Model;
 using Microsoft.SemanticKernel;
 using System.Linq;
 using Microsoft.BotBuilderSamples;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
 
 namespace Plugins;
 
 public class SearchPlugin
 {
     private readonly SearchClient searchClient;
+    private ITurnContext<IMessageActivity> _turnContext;
 
-    public SearchPlugin(IConfiguration config, ConversationData conversationData) {
+    public SearchPlugin(IConfiguration config, ConversationData conversationData, ITurnContext<IMessageActivity> turnContext) {
         var _searchApiKey = config.GetValue<string>("SEARCH_API_KEY");
         var _searchApiEndpoint = config.GetValue<string>("SEARCH_API_ENDPOINT");
         var _searchIndex = config.GetValue<string>("SEARCH_INDEX");
         searchClient = new SearchClient (new Uri(_searchApiEndpoint), _searchIndex, new AzureKeyCredential(_searchApiKey));
+        _turnContext = turnContext;
     }
 
     
@@ -32,6 +34,7 @@ public class SearchPlugin
         [Description("The description to be used in the search")] string query
     )
     {
+        await _turnContext.SendActivityAsync($"Searching hotels with the description \"{query}\"...");
         var options = new SearchOptions();
         options.Select.Add("HotelName");
         options.Select.Add("Description");
