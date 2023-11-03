@@ -57,7 +57,7 @@ If this step causes you any errors, try updating your Azure CLI.
 ```
 cd src
 rm -r bin obj Archive.zip
-zip -r Archive.zip ./* ./.*
+zip -r Archive.zip ./* .deployment
 az webapp deployment source config-zip --resource-group "YOUR_RG_NAME" --name "YOUR_APPSERVICES_NAME" --src "Archive.zip"
 ```
 
