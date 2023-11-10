@@ -28,7 +28,7 @@ public class UploadPlugin
 
 
 
-    [SKFunction, Description("Search for relevant information in the uploaded documents")]
+    [SKFunction, Description("Search for relevant information in the uploaded documents. Do not use this function unless the user refers to documents they uploaded.")]
     public async Task<string> SearchUploads(
         [Description("The text to search by similarity")] string query
     )
