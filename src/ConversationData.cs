@@ -1,22 +1,21 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
-using Azure;
 
 namespace Microsoft.BotBuilderSamples
 {
-    public class ConversationTurn 
+    public class ConversationTurn
     {
         public string Role { get; set; } = null;
         public string Message { get; set; } = null;
     }
-    public class Attachment 
+    public class Attachment
     {
+        public string Name { get; set; }
         public List<AttachmentPage> Pages { get; set; } = new List<AttachmentPage>();
     }
-    public class AttachmentPage 
+    public class AttachmentPage
     {
         public string Content { get; set; } = null;
         public float[] Vector { get; set; } = null;

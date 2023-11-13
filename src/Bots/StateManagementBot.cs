@@ -17,12 +17,14 @@ namespace Microsoft.BotBuilderSamples
         private BotState _conversationState;
         private BotState _userState;
         private int _max_messages;
+        private int _max_attachments;
 
         public StateManagementBot(IConfiguration config, ConversationState conversationState, UserState userState)
         {
             _conversationState = conversationState;
             _userState = userState;
             _max_messages = config.GetValue<int?>("CONVERSATION_HISTORY_MAX_MESSAGES") ?? 10;
+            _max_messages = config.GetValue<int?>("MAX_ATTACHMENTS") ?? 5;
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
@@ -48,6 +50,15 @@ namespace Microsoft.BotBuilderSamples
             var userStateAccessors = _userState.CreateProperty<UserProfile>(nameof(UserProfile));
             var userProfile = await userStateAccessors.GetAsync(turnContext, () => new UserProfile());
 
+            // -- Special keywords
+            // Clear conversation
+            if (turnContext.Activity.Text == "clear") {
+                conversationData.History.Clear();
+                conversationData.Attachments.Clear();
+                await turnContext.SendActivityAsync("Conversation context cleared");
+                return;
+            }
+
             conversationData.History.Add(new ConversationTurn { Role = "user", Message = turnContext.Activity.Text });
 
             var replyText = await ProcessMessage(conversationData, turnContext);
@@ -59,6 +70,11 @@ namespace Microsoft.BotBuilderSamples
                 Math.Max(conversationData.History.Count - _max_messages, 0), 
                 Math.Min(conversationData.History.Count, _max_messages)
             );
+            conversationData.Attachments = conversationData.Attachments.GetRange(
+                Math.Max(conversationData.Attachments.Count - _max_attachments, 0), 
+                Math.Min(conversationData.Attachments.Count, _max_attachments)
+            );
+
         }
 
         public virtual async Task<string> ProcessMessage(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext) {

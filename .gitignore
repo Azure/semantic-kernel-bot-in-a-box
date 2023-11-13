@@ -4,3 +4,4 @@ obj
 appsettings.json
 Archive.zip
 .DS_Store
+git-exclude

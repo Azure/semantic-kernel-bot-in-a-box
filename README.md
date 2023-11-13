@@ -100,6 +100,15 @@ You may ask about the following topics to test each functionality
     - Upload a file and ask questions about it;
 ![Upload scenario](./readme_assets/webchat-upload.png)
 
+5. Generate images (DALLEPlugin)
+    - Ask to generate images;
+![Image Generation scenario](./readme_assets/webchat-dalle.png)
+
+
+## Keywords
+
+- Send "clear" to reset the conversation context;
+
 
 ## Debugging intermediate thoughts
 

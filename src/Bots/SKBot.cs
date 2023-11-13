@@ -6,12 +6,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +24,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Planners;
 using Model;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Plugins;
 
 namespace Microsoft.BotBuilderSamples
@@ -39,8 +44,11 @@ namespace Microsoft.BotBuilderSamples
         private IConfiguration _config;
         private readonly AzureTextEmbeddingGeneration embeddingClient;
         private readonly DocumentAnalysisClient documentAnalysisClient;
+        private readonly IHttpClientFactory _clientFactory;
+        private static string microsoftAppId;
+        private static string microsoftAppPassword;
 
-        public SKBot(IConfiguration config, ConversationState conversationState, UserState userState) : base(config, conversationState, userState)
+        public SKBot(IHttpClientFactory clientFactory, IConfiguration config, ConversationState conversationState, UserState userState) : base(config, conversationState, userState)
         {
             _aoaiApiKey = config.GetValue<string>("AOAI_API_KEY");
             _aoaiApiEndpoint = config.GetValue<string>("AOAI_API_ENDPOINT");
@@ -55,6 +63,9 @@ namespace Microsoft.BotBuilderSamples
 
             _debug = config.GetValue<bool>("DEBUG");
             _config = config;
+            _clientFactory = clientFactory;
+            microsoftAppId = config.GetValue<string>("MicrosoftAppId");
+            microsoftAppPassword = config.GetValue<string>("MicrosoftAppPassword");
         }
 
         private IKernel GetKernel(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext) {
@@ -81,6 +92,7 @@ namespace Microsoft.BotBuilderSamples
             if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new UploadPlugin(_config, conversationData, turnContext), "UploadPlugin");
             if (!_config.GetValue<string>("SQL_CONNECTION_STRING").IsNullOrEmpty()) kernel.ImportFunctions(new SQLPlugin(_config, conversationData, turnContext), "SQLPlugin");
             if (!_config.GetValue<string>("SEARCH_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new SearchPlugin(_config, conversationData, turnContext), "SearchPlugin");
+            kernel.ImportFunctions(new DALLEPlugin(_config, conversationData, turnContext), "DALLEPlugin");
             return kernel;
         }
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
@@ -90,11 +102,19 @@ namespace Microsoft.BotBuilderSamples
 
         public override async Task<string> ProcessMessage(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
         {
-            // Handle file uploads
-            if (turnContext.Activity.Attachments?.Count > 0)
+            // If there are PDF files attached, ingest them
+            if (
+                turnContext.Activity.Attachments?.Count > 0 && 
+                turnContext.Activity.Attachments.Any(x => x.ContentType == "application/pdf")
+            )
             {
-                if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty())
-                    return await HandleFileUpload(conversationData, turnContext);
+                if (!_config.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty()) {
+                    var textresponse = "";
+                    foreach (Bot.Schema.Attachment pdfAttachment in turnContext.Activity.Attachments.Where(x => x.ContentType == "application/pdf")) {
+                        textresponse += await HandleFileUpload(conversationData, pdfAttachment) + "\n";
+                    }
+                    return textresponse;
+                }
                 else
                     return "Document upload not supported as no Document Intelligence endpoint was provided";
             }
@@ -117,9 +137,9 @@ namespace Microsoft.BotBuilderSamples
             return stepsTaken[stepsTaken.Length - 1].final_answer;
         }
 
-        private async Task<string> HandleFileUpload(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
+        private async Task<string> HandleFileUpload(ConversationData conversationData, Bot.Schema.Attachment pdfAttachment)
         {
-            Uri fileUri = new Uri(turnContext.Activity.Attachments.First().ContentUrl);
+            Uri fileUri = new Uri(pdfAttachment.ContentUrl);
 
             var httpClient = new HttpClient();
             var stream = await httpClient.GetStreamAsync(fileUri);
@@ -135,6 +155,7 @@ namespace Microsoft.BotBuilderSamples
             AnalyzeResult result = operation.Value;
 
             var attachment = new Attachment();
+            attachment.Name = pdfAttachment.Name;
             foreach (DocumentPage page in result.Pages)
             {
                 var attachmentPage = new AttachmentPage();
@@ -151,7 +172,7 @@ namespace Microsoft.BotBuilderSamples
             }
             conversationData.Attachments.Add(attachment);
 
-            return $"File {turnContext.Activity.Attachments[0].Name} uploaded successfully! {result.Pages.Count()} pages ingested.";
+            return $"File {pdfAttachment.Name} uploaded successfully! {result.Pages.Count()} pages ingested.";
         }
     }
 }

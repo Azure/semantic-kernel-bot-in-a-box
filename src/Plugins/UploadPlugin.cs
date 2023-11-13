@@ -27,17 +27,18 @@ public class UploadPlugin
     }
 
 
-
-    [SKFunction, Description("Search for relevant information in the uploaded documents. Do not use this function unless the user refers to documents they uploaded.")]
+    [SKFunction, Description("Search for relevant information in the uploaded documents. Only use this when the user refers to documents they uploaded.")]
     public async Task<string> SearchUploads(
+        [Description("The exact name of the document to be searched")] string docName,
         [Description("The text to search by similarity")] string query
     )
     {
-        await _turnContext.SendActivityAsync($"Searching uploaded document for \"{query}\"...");
+        await _turnContext.SendActivityAsync($"Searching document {docName} for \"{query}\"...");
         var embedding = await embeddingClient.GenerateEmbeddingsAsync(new List<string> { query });
         var vector = embedding.First().ToArray();
         var similarities = new List<float>();
-        foreach (AttachmentPage page in _conversationData.Attachments.First().Pages)
+        var attachment = _conversationData.Attachments.Find(x => x.Name == docName);
+        foreach (AttachmentPage page in attachment.Pages)
         {
             float similarity = 0;
             for (int i = 0; i < page.Vector.Count(); i++)
