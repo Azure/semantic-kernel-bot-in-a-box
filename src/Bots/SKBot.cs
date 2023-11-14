@@ -93,6 +93,7 @@ namespace Microsoft.BotBuilderSamples
             if (!_config.GetValue<string>("SQL_CONNECTION_STRING").IsNullOrEmpty()) kernel.ImportFunctions(new SQLPlugin(_config, conversationData, turnContext), "SQLPlugin");
             if (!_config.GetValue<string>("SEARCH_API_ENDPOINT").IsNullOrEmpty()) kernel.ImportFunctions(new SearchPlugin(_config, conversationData, turnContext), "SearchPlugin");
             kernel.ImportFunctions(new DALLEPlugin(_config, conversationData, turnContext), "DALLEPlugin");
+            // kernel.ImportFunctions(new ChartsPlugin(_config, conversationData, turnContext), "ChartsPlugin");
             return kernel;
         }
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)

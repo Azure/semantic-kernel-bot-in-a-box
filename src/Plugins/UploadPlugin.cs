@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using Microsoft.BotBuilderSamples;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using System;
+using System.Text.Json;
 
 namespace Plugins;
 

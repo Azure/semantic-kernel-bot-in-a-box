@@ -24,7 +24,7 @@ namespace Microsoft.BotBuilderSamples
             _conversationState = conversationState;
             _userState = userState;
             _max_messages = config.GetValue<int?>("CONVERSATION_HISTORY_MAX_MESSAGES") ?? 10;
-            _max_messages = config.GetValue<int?>("MAX_ATTACHMENTS") ?? 5;
+            _max_attachments = config.GetValue<int?>("MAX_ATTACHMENTS") ?? 5;
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))

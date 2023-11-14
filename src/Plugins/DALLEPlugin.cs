@@ -8,11 +8,7 @@ using Microsoft.BotBuilderSamples;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Azure.AI.OpenAI;
-using System.IO;
-using Newtonsoft.Json;
-using System.Threading;
 using System.Collections.Generic;
-using System.Security.Policy;
 
 namespace Plugins;
 public class DALLEPlugin
