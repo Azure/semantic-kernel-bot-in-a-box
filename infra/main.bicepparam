@@ -1,7 +1,10 @@
 using 'main.bicep'
 
-param resourceLocation = 'eastus'
+param resourceLocation = 'eastus2'
 param prefix = 'aitoolkit'
+
+param gptModel = 'gpt-4'
+param gptVersion = '1106-Preview'
 
 param tags = {
   Owner: 'AI Team'
@@ -13,6 +16,3 @@ param tags = {
 param deployDocIntel = true
 param deploySearch = true
 param deploySQL = true
-
-param msaAppId = 'YOUR_APP_ID'
-param msaAppPassword = 'YOUR_APP_SECRET'

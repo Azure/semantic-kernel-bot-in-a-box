@@ -1,9 +1,8 @@
 param resourceLocation string
 param prefix string
 param tags object = {}
-param sqlAdminLogin string
-@secure()
-param sqlAdminPassword string
+
+param msiPrincipalID string
 
 var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id), 1, 3) 
 var sqlServerName = '${prefix}-sql-${uniqueSuffix}'
@@ -15,8 +14,14 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   location: resourceLocation
   tags: tags
   properties: {
-    administratorLogin: sqlAdminLogin
-    administratorLoginPassword: sqlAdminPassword
+    administrators: {
+      azureADOnlyAuthentication: true
+      principalType: 'Application'
+      administratorType: 'ActiveDirectory'
+      login: msiPrincipalID
+      sid: msiPrincipalID
+      tenantId: tenant().tenantId
+    }
   }
 
   resource fw 'firewallRules' = {
@@ -43,3 +48,4 @@ resource sqlDB 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
 
 output sqlServer string = sqlServer.id
 output sqlDB string = sqlDB.id
+output sqlConnectionString string = 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDB.name};Persist Security Info=False;Authentication=Active Directory MSI;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'

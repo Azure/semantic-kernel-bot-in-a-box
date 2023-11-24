@@ -1,7 +1,8 @@
 param resourceLocation string
 param prefix string
 param endpoint string
-param msaAppId string
+param msiID string
+param msiPrincipalID string
 param sku string = 'F0'
 param kind string = 'azurebot'
 param tags object = {}
@@ -20,7 +21,9 @@ resource botservice 'Microsoft.BotService/botServices@2022-09-15' = {
   properties: {
     displayName: botServiceName
     endpoint: endpoint
-    msaAppId: msaAppId
-    msaAppType: 'MultiTenant'
+    msaAppMSIResourceId: msiID
+    msaAppId: msiPrincipalID
+    msaAppType: 'UserAssignedMSI'
+    msaAppTenantId: tenant().tenantId
   }
 }

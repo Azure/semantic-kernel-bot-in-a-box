@@ -52,7 +52,7 @@ namespace Microsoft.BotBuilderSamples
 
             // -- Special keywords
             // Clear conversation
-            if (turnContext.Activity.Text == "clear") {
+            if (turnContext.Activity.Text.ToLower() == "clear") {
                 conversationData.History.Clear();
                 conversationData.Attachments.Clear();
                 await turnContext.SendActivityAsync("Conversation context cleared");
