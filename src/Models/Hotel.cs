@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Azure.Search.Documents.Indexes;
 
-namespace Model;
+namespace Models;
 
 public class Address {
     [JsonPropertyName("StreetAddress")]

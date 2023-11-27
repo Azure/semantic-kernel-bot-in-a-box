@@ -1,13 +1,10 @@
-param resourceLocation string
-param prefix string
+param location string
+param msiName string
 param tags object = {}
-
-var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id), 1, 3) 
-var msiName = '${prefix}-id-${uniqueSuffix}'
 
 resource msi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: msiName
-  location: resourceLocation
+  location: location
   tags: tags
 }
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -19,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Services;
 
 namespace Microsoft.BotBuilderSamples
 {
@@ -28,12 +30,14 @@ namespace Microsoft.BotBuilderSamples
         public void ConfigureServices(IServiceCollection services)
         {
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile("appsettings.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
             services.AddSingleton(configuration);
 
-            TokenCredential azureCredentials;
+            services.AddHttpClient<DirectLineService>();
+
+            DefaultAzureCredential azureCredentials;
             if (configuration.GetValue<string>("MicrosoftAppType") == "UserAssignedMSI")
                 azureCredentials = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { ManagedIdentityClientId = configuration.GetValue<string>("MicrosoftAppId") });
             else
@@ -76,16 +80,20 @@ namespace Microsoft.BotBuilderSamples
             services.AddSingleton(conversationState);
 
             services.AddSingleton(new OpenAIClient(new Uri(configuration.GetValue<string>("AOAI_API_ENDPOINT")), azureCredentials));
-            services.AddSingleton(new AzureTextEmbeddingGeneration(configuration.GetValue<string>("AOAI_EMBEDDINGS_MODEL"), configuration.GetValue<string>("AOAI_API_ENDPOINT"), azureCredentials));
+            services.AddSingleton(new AzureOpenAITextEmbeddingGeneration(configuration.GetValue<string>("AOAI_EMBEDDINGS_MODEL"), configuration.GetValue<string>("AOAI_API_ENDPOINT"), azureCredentials));
             if (!configuration.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty())
-                services.AddSingleton(new DocumentAnalysisClient(new Uri(configuration.GetValue<string>("DOCINTEL_API_ENDPOINT")), azureCredentials));
+                services.AddSingleton(new DocumentAnalysisClient(new Uri(configuration.GetValue<string>("DOCINTEL_API_ENDPOINT")), new AzureKeyCredential(configuration.GetValue<string>("DOCINTEL_API_KEY"))));
             if (!configuration.GetValue<string>("SEARCH_API_ENDPOINT").IsNullOrEmpty())
                 services.AddSingleton(new SearchClient(new Uri(configuration.GetValue<string>("SEARCH_API_ENDPOINT")), configuration.GetValue<string>("SEARCH_INDEX"), azureCredentials));
             if (!configuration.GetValue<string>("SQL_CONNECTION_STRING").IsNullOrEmpty())
                 services.AddSingleton(new SqlConnectionFactory(configuration.GetValue<string>("SQL_CONNECTION_STRING")));
+            if (!configuration.GetValue<string>("BING_API_ENDPOINT").IsNullOrEmpty())
+                services.AddSingleton(new BingClient(new System.Net.Http.HttpClient(), new Uri(configuration.GetValue<string>("BING_API_ENDPOINT")), configuration.GetValue<string>("BING_API_KEY")));
+            services.AddSingleton(azureCredentials);
 
             services.AddHttpClient();
             // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
+            // services.AddSingleton<LoginDialog>();
             services.AddTransient<IBot, SemanticKernelBot>();
         }
 

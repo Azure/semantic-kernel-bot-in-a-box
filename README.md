@@ -39,29 +39,16 @@ The flow of messages is as follows:
 ```
 git clone https://github.com/Azure/semantic-kernel-bot-in-a-box
 ```
-
-2. Create a new resource group
-3. In the `infra` directory, look for the file `main.bicepparam`. In this file, you may configure the region, GPT model to be used, and whether to deploy optional services Document Analysis, AI Search and SQL Server. If you choose to disable them, keep in mind the Upload, Search and SQL Plugins will also be disabled.
-4. Deploy resources: 
+2. In the `infra` directory, look for the file `main.parameters.json`. In this file, you may configure the GPT model to be used, and whether to deploy optional services Document Analysis, AI Search and SQL Server. If you choose to disable them, keep in mind the Upload, Search and SQL Plugins will also be disabled. Also keep in mind [model availability](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models) in your subscription before changing the default deployment region.
+3. Deploy resources
 ```
-cd infra
-az deployment group create --resource-group=YOUR_RG_NAME -f main.bicep --parameters main.bicepparam
+azd up
 ```
-If this step causes you any errors, try updating your Azure CLI.
-
-5. Deploy bot application to App Services:
-```
-cd src
-rm -r bin obj Archive.zip
-zip -r Archive.zip ./* .deployment
-az webapp deployment source config-zip --resource-group "YOUR_RG_NAME" --name "YOUR_APPSERVICES_NAME" --src "Archive.zip"
-```
-
-6. (If using the search sample) Connect Hotels Sample Index on the Azure Cognitive Services instance
+4. (If using the search sample) Connect Hotels Sample Index on the Azure Cognitive Services instance
 ![Cognitive Search Home](./readme_assets/cognitive-search-home.png)
 ![Create Cognitive Search Index from Sample](./readme_assets/cognitive-search-index-sample.png)
 
-7. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
+5. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
 
 ![Test Web Chat](./readme_assets/webchat-test.png)
 
@@ -128,6 +115,19 @@ To create a custom plugin:
 - Load your plugin in the Bots/SemanticKernelBot.cs file
 
 And you're done! Redeploy your app and Semantic Kernel will now use your plugin whenever the user's questions call for it.
+
+## Enabling Web Chat
+
+To deploy a Web Chat version of your app:
+
+- Go to your Azure Bot Resource;
+- Go to Channels;
+- Click on Direct Line;
+- Obtain a Direct Line Secret;
+- Add the secret to your App Service's environment variables, under the key DIRECT_LINE_SECRET;
+- Your bot will be available at https://APP_NAME.azurewebsites.net.
+
+Please note that doing so will make your bot public, unless you implement authentication / SSO.
 
 ## Contributing
 

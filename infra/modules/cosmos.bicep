@@ -1,22 +1,17 @@
-param resourceLocation string
-param prefix string
+param location string
+param cosmosName string
 param tags object = {}
-
 param msiPrincipalID string
 
-var uniqueSuffix = substring(uniqueString(subscription().id, resourceGroup().id), 1, 3) 
-var cosmosAccountName = '${prefix}-cosmos-${uniqueSuffix}'
-
-
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' =  {
-  name: cosmosAccountName
-  location: resourceLocation
+resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' =  {
+  name: cosmosName
+  location: location
   tags: tags
   kind: 'GlobalDocumentDB'
   properties: {
     locations: [
       {
-        locationName: resourceLocation
+        locationName: location
         failoverPriority: 0
         isZoneRedundant: false
       }
@@ -51,35 +46,35 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' =  {
 
 resource cosmosDataReader 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2021-10-15' existing = {
   name: '00000000-0000-0000-0000-000000000001'
-  parent: cosmosAccount
+  parent: cosmos
 }
 
 resource cosmosDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2021-10-15' existing = {
   name: '00000000-0000-0000-0000-000000000002'
-  parent: cosmosAccount
+  parent: cosmos
 }
 
 resource appReadAccess 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2023-04-15' = {
-  name: guid(cosmosAccount.id, msiPrincipalID, cosmosDataReader.id)
-  parent: cosmosAccount
+  name: guid(cosmos.id, msiPrincipalID, cosmosDataReader.id)
+  parent: cosmos
   properties: {
     roleDefinitionId: cosmosDataReader.id
     principalId: msiPrincipalID
-    scope: cosmosAccount.id
+    scope: cosmos.id
   }
 }
 
 resource appWriteAccess 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2023-04-15' = {
-  name: guid(cosmosAccount.id, msiPrincipalID, cosmosDataContributor.id)
-  parent: cosmosAccount
+  name: guid(cosmos.id, msiPrincipalID, cosmosDataContributor.id)
+  parent: cosmos
   properties: {
     roleDefinitionId: cosmosDataContributor.id
     principalId: msiPrincipalID
-    scope: cosmosAccount.id
+    scope: cosmos.id
   }
 }
 
 
 
-output cosmosAccountID string = cosmosAccount.id
-output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
+output cosmosID string = cosmos.id
+output cosmosEndpoint string = cosmos.properties.documentEndpoint

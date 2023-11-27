@@ -12,7 +12,9 @@ using Azure.AI.FormRecognizer.DocumentAnalysis;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
 
@@ -20,32 +22,32 @@ namespace Microsoft.BotBuilderSamples
 {
     public class DocumentUploadBot : StateManagementBot
     {
-        private readonly AzureTextEmbeddingGeneration _embeddingsClient;
+        private readonly AzureOpenAITextEmbeddingGeneration _embeddingsClient;
         private readonly DocumentAnalysisClient _documentAnalysisClient;
 
-        public DocumentUploadBot(IConfiguration config, ConversationState conversationState, UserState userState, AzureTextEmbeddingGeneration embeddingsClient, DocumentAnalysisClient documentAnalysisClient) : base(config, conversationState, userState)
+        public DocumentUploadBot(IConfiguration config, ConversationState conversationState, UserState userState, AzureOpenAITextEmbeddingGeneration embeddingsClient, DocumentAnalysisClient documentAnalysisClient) : base(config, conversationState, userState)
         {
             _embeddingsClient = embeddingsClient;
             _documentAnalysisClient = documentAnalysisClient;
         }
 
-        public override async Task<string> ProcessMessage(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
+        public async Task HandleFileUploads(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
         {
-            if (_documentAnalysisClient.IsNull()) {
-                return "Document upload not supported as no Document Intelligence endpoint was provided";
-            }
-            if (!turnContext.Activity.Attachments.Any(x => x.ContentType == "application/pdf")) {
-                return await base.ProcessMessage(conversationData, turnContext);
-            }
+            if (turnContext.Activity.Attachments.IsNullOrEmpty())
+                return;
             var pdfAttachments = turnContext.Activity.Attachments.Where(x => x.ContentType == "application/pdf");
-            var textresponse = "";
-            foreach (Bot.Schema.Attachment pdfAttachment in pdfAttachments) {
-                textresponse += await HandleFileUpload(conversationData, pdfAttachment) + "\n";
+            if (pdfAttachments.IsNullOrEmpty())
+                return;
+            if (_documentAnalysisClient == null) {
+                await turnContext.SendActivityAsync("Document upload not supported as no Document Intelligence endpoint was provided");
+                return;
             }
-            return textresponse;
+            foreach (Bot.Schema.Attachment pdfAttachment in pdfAttachments) {
+                await IngestPdfAttachment(conversationData, turnContext, pdfAttachment);
+            }
         }
 
-        private async Task<string> HandleFileUpload(ConversationData conversationData, Bot.Schema.Attachment pdfAttachment)
+        private async Task IngestPdfAttachment(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext, Bot.Schema.Attachment pdfAttachment)
         {
             Uri fileUri = new Uri(pdfAttachment.ContentUrl);
 
@@ -80,7 +82,9 @@ namespace Microsoft.BotBuilderSamples
             }
             conversationData.Attachments.Add(attachment);
 
-            return $"File {pdfAttachment.Name} uploaded successfully! {result.Pages.Count()} pages ingested.";
+            var replyText = $"File {pdfAttachment.Name} uploaded successfully! {result.Pages.Count()} pages ingested.";
+            conversationData.History.Add(new ConversationTurn { Role = "assistant", Message = replyText });
+            await turnContext.SendActivityAsync(replyText);
         }
     }
 }

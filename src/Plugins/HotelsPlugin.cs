@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Models;
-using Model;
+using Models;
 using Microsoft.SemanticKernel;
 using System.Linq;
 using Microsoft.BotBuilderSamples;
