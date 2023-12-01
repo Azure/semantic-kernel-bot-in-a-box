@@ -59,10 +59,10 @@
       "value": true
     },
     "deploySearch": {
-      "value": false
+      "value": true
     },
     "deploySQL": {
-      "value": false
+      "value": true
     },
     "deployDalle3": {
       "value": false

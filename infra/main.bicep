@@ -156,3 +156,8 @@ module m_bot 'modules/botservice.bicep' = {
     msiID: m_msi.outputs.msiID
   }
 }
+
+output AZURE_SEARCH_ENDPOINT string = m_search.outputs.searchEndpoint
+output AZURE_SEARCH_NAME string = m_search.outputs.searchName
+output AZURE_RESOURCE_GROUP_ID string = resourceGroup.id
+output AZURE_RESOURCE_GROUP_NAME string = resourceGroup.name

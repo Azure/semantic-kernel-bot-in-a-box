@@ -8,3 +8,10 @@ services:
         project: src
         host: appservice
         language: dotnet
+# hooks:
+#     postdeploy:
+#         posix:
+#             shell: sh
+#             run: "./scripts/createIndex.sh"
+#             continueOnError: false
+#             interactive: false

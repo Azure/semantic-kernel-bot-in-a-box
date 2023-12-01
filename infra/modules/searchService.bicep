@@ -63,4 +63,5 @@ resource appAccess3 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 output searchID string = search.id
+output searchName string = search.name
 output searchEndpoint string = 'https://${search.name}.search.windows.net'

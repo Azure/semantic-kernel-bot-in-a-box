@@ -26,10 +26,11 @@ The flow of messages is as follows:
 
 - For deploying to Azure:
     - Install Azure CLI
+    - Install Azure Developer CLI
     - Log into your Azure subscription
 
     ```
-    az login
+    azd auth login
     ```
 
 ## Deploy to Azure
@@ -44,11 +45,7 @@ git clone https://github.com/Azure/semantic-kernel-bot-in-a-box
 ```
 azd up
 ```
-4. (If using the search sample) Connect Hotels Sample Index on the Azure Cognitive Services instance
-![Cognitive Search Home](./readme_assets/cognitive-search-home.png)
-![Create Cognitive Search Index from Sample](./readme_assets/cognitive-search-index-sample.png)
-
-5. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
+4. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
 
 ![Test Web Chat](./readme_assets/webchat-test.png)
 
