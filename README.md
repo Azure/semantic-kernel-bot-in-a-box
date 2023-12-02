@@ -103,7 +103,7 @@ This project comes with a built-in debug tool that can output the Semantic Kerne
 
 ## Developing your own plugins
 
-This project comes with two plugins, which may be found in the Plugins/ directory. You may use these plugins as examples when developing your own plugins.
+This project comes with a few plugins, which may be found in the Plugins/ directory. You may use these as examples when developing your own plugins.
 
 To create a custom plugin:
 
