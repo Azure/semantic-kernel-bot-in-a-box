@@ -9,7 +9,9 @@ param openaiGPTModel string
 param openaiEmbeddingsModel string
 
 param documentIntelligenceName string
+var documentIntelligenceNames = !empty(documentIntelligenceName) ? [documentIntelligenceName] : []
 param bingName string
+var bingNames = !empty(bingName) ? [bingName] : []
 
 param openaiEndpoint string
 param searchEndpoint string
@@ -17,13 +19,14 @@ param documentIntelligenceEndpoint string
 param sqlConnectionString string
 param cosmosEndpoint string
 
-resource bing 'Microsoft.Bing/accounts@2020-06-10' existing = if (!empty(bingName)) {
-  name: bingName
-}
+resource bingAccounts 'Microsoft.Bing/accounts@2020-06-10' existing = [for name in bingNames: {
+  name: name
+}]
 
-resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-05-01' existing = if (!empty(documentIntelligenceName)) {
-  name: documentIntelligenceName
-}
+
+resource documentIntelligences 'Microsoft.CognitiveServices/accounts@2023-05-01' existing = [for name in documentIntelligenceNames: {
+  name: name
+}]
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: appServicePlanName
@@ -88,7 +91,7 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'DOCINTEL_API_KEY'
-          value: documentIntelligence.listKeys().key1
+          value: !empty(documentIntelligenceName) ? documentIntelligences[0].listKeys().key1 : ''
         }
         {
           name: 'SQL_CONNECTION_STRING'
@@ -104,11 +107,11 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'BING_API_ENDPOINT'
-          value: bing.properties.endpoint
+          value: !empty(bingName) ? bingAccounts[0].listKeys().key1 : ''
         }
         {
           name: 'BING_API_KEY'
-          value: bing.listKeys().key1
+          value: !empty(bingName) ? bingAccounts[0].listKeys().key1 : ''
         }
         {
           name: 'PROMPT_WELCOME_MESSAGE'
