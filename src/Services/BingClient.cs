@@ -27,7 +27,6 @@ namespace Services
                     { "Ocp-Apim-Subscription-Key", _accessKey },
                 },
             };
-
             var response = await _httpClient.SendAsync(tokenRequest, default);
 
             var responseContent = await response.Content.ReadAsStringAsync();

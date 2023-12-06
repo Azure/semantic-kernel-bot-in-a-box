@@ -6,6 +6,7 @@ param msiClientID string
 param sku string = 'F0'
 param kind string = 'azurebot'
 param tags object = {}
+param publicNetworkAccess string
 
 resource botservice 'Microsoft.BotService/botServices@2022-09-15' = {
   name: botServiceName
@@ -22,6 +23,7 @@ resource botservice 'Microsoft.BotService/botServices@2022-09-15' = {
     msaAppId: msiClientID
     msaAppType: 'UserAssignedMSI'
     msaAppTenantId: tenant().tenantId
+    publicNetworkAccess: publicNetworkAccess
   }
 
 }

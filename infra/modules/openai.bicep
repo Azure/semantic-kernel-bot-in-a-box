@@ -5,6 +5,7 @@ param gptModel string
 param gptVersion string
 param msiPrincipalID string
 param deployDalle3 bool
+param publicNetworkAccess string
 
 resource openai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: openaiName
@@ -22,7 +23,7 @@ resource openai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
     networkAcls: {
       defaultAction: 'Allow'
     }
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: publicNetworkAccess
   }
 }
 

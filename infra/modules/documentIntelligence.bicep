@@ -2,6 +2,7 @@ param location string
 param documentIntelligenceName string
 param tags object = {}
 param msiPrincipalID string
+param publicNetworkAccess string
 
 resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: documentIntelligenceName
@@ -19,6 +20,7 @@ resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-05-01' 
     networkAcls: {
       defaultAction: 'Allow'
     }
+    publicNetworkAccess: publicNetworkAccess
   }
 }
 

@@ -1,5 +1,7 @@
 . ./scripts/loadenv.sh
 
+if [ -z $AZURE_SEARCH_NAME ]; then exit; fi
+
 echo "Creating Azure Search Index"
 
 AZURE_SEARCH_API_KEY=$(az search admin-key show --service-name $AZURE_SEARCH_NAME -g $AZURE_RESOURCE_GROUP_NAME --query primaryKey --output tsv)

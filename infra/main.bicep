@@ -2,13 +2,16 @@ targetScope = 'subscription'
 
 param location string
 param environmentName string
-param resourceGroupName string
+param resourceGroupName string = ''
 
 param tags object
 
 param openaiName string = ''
-param gptModel string = 'gpt-4'
-param gptVersion string = '0613'
+
+@allowed(['gpt-4', 'gpt-4-32k'])
+param gptModel string
+@allowed(['0613', '1106-Preview'])
+param gptVersion string
 
 param msiName string = ''
 param appServicePlanName string = ''
@@ -21,11 +24,17 @@ param sqlDBName string = ''
 param searchName string = ''
 param documentIntelligenceName string = ''
 param bingName string = ''
-param deploySQL bool = true
-param deploySearch bool = true
-param deployDocIntel bool = true
-param deployDalle3 bool = true
-param deployBing bool = true
+@description('Deploy SQL Database? (required for SQL Plugin demo)')
+param deploySQL bool
+@description('Deploy Search service? (required for Search Plugin demo)')
+param deploySearch bool
+@description('Deploy Document Intelligence service? (required for Upload Plugin demo)')
+param deployDocIntel bool
+param deployDalle3 bool = false
+param deployBing bool = false
+
+@allowed(['Enabled', 'Disabled'])
+param publicNetworkAccess string
 
 var abbrs = loadJsonContent('abbreviations.json')
 
@@ -57,6 +66,7 @@ module m_openai 'modules/openai.bicep' = {
     gptModel: gptModel
     gptVersion: gptVersion
     msiPrincipalID: m_msi.outputs.msiPrincipalID
+    publicNetworkAccess: publicNetworkAccess
     deployDalle3: deployDalle3
     tags: tags
   }
@@ -69,6 +79,7 @@ module m_docs 'modules/documentIntelligence.bicep' = if (deployDocIntel) {
     location: location
     documentIntelligenceName: !empty(documentIntelligenceName) ? documentIntelligenceName : '${abbrs.cognitiveServicesFormRecognizer}${environmentName}-${uniqueSuffix}'
     msiPrincipalID: m_msi.outputs.msiPrincipalID
+    publicNetworkAccess: publicNetworkAccess
     tags: tags
   }
 }
@@ -80,6 +91,7 @@ module m_search 'modules/searchService.bicep' = if (deploySearch) {
     location: location
     searchName: !empty(searchName) ? searchName : '${abbrs.searchSearchServices}${environmentName}-${uniqueSuffix}'
     msiPrincipalID: m_msi.outputs.msiPrincipalID
+    publicNetworkAccess: publicNetworkAccess
     tags: tags
   }
 }
@@ -93,6 +105,7 @@ module m_sql 'modules/sql.bicep' = if (deploySQL) {
     sqlDBName: !empty(sqlDBName) ? sqlDBName : '${abbrs.sqlServersDatabases}${environmentName}-${uniqueSuffix}'
     msiPrincipalID: m_msi.outputs.msiPrincipalID
     msiClientID: m_msi.outputs.msiClientID
+    publicNetworkAccess: publicNetworkAccess
     tags: tags
   }
 }
@@ -104,6 +117,7 @@ module m_cosmos 'modules/cosmos.bicep' = {
     location: location
     cosmosName: !empty(cosmosName) ? cosmosName : '${abbrs.documentDBDatabaseAccounts}${environmentName}-${uniqueSuffix}'
     msiPrincipalID: m_msi.outputs.msiPrincipalID
+    publicNetworkAccess: publicNetworkAccess
     tags: tags
   }
 }
@@ -139,9 +153,6 @@ module m_app 'modules/appservice.bicep' = {
     cosmosEndpoint: m_cosmos.outputs.cosmosEndpoint
     sqlConnectionString: deploySQL ? m_sql.outputs.sqlConnectionString : ''
   }
-  dependsOn: [
-    m_openai, m_docs, m_cosmos, m_search, m_sql
-  ]
 }
 
 module m_bot 'modules/botservice.bicep' = {
@@ -154,10 +165,11 @@ module m_bot 'modules/botservice.bicep' = {
     endpoint: 'https://${m_app.outputs.hostName}/api/messages'
     msiClientID: m_msi.outputs.msiClientID
     msiID: m_msi.outputs.msiID
+    publicNetworkAccess: publicNetworkAccess
   }
 }
 
-output AZURE_SEARCH_ENDPOINT string = m_search.outputs.searchEndpoint
-output AZURE_SEARCH_NAME string = m_search.outputs.searchName
+output AZURE_SEARCH_ENDPOINT string = deploySearch ? m_search.outputs.searchEndpoint : ''
+output AZURE_SEARCH_NAME string = deploySearch ? m_search.outputs.searchName : ''
 output AZURE_RESOURCE_GROUP_ID string = resourceGroup.id
 output AZURE_RESOURCE_GROUP_NAME string = resourceGroup.name

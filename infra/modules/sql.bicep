@@ -4,7 +4,7 @@ param sqlDBName string
 param tags object = {}
 param msiPrincipalID string
 param msiClientID string
-
+param publicNetworkAccess string
 
 resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   name: sqlServerName
@@ -19,9 +19,10 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
       sid: msiPrincipalID
       tenantId: tenant().tenantId
     }
+    publicNetworkAccess: publicNetworkAccess
   }
 
-  resource fw 'firewallRules' = {
+  resource fw 'firewallRules' = if (publicNetworkAccess == 'Enabled') {
     name: 'default-fw'
     properties: {
       startIpAddress: '0.0.0.0'

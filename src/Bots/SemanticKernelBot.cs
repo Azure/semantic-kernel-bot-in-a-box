@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
 using Azure.AI.OpenAI;
 using Azure.Search.Documents;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +30,7 @@ namespace Microsoft.BotBuilderSamples
         private string _aoaiModel;
         private StepwisePlanner _planner;
         private ILoggerFactory loggerFactory;
+        private readonly IConfiguration _config;
         private readonly OpenAIClient _aoaiClient;
         private readonly BingClient _bingClient;
         private readonly SearchClient _searchClient;
@@ -67,6 +67,7 @@ namespace Microsoft.BotBuilderSamples
             _documentAnalysisClient = documentAnalysisClient;
             _sqlConnectionFactory = sqlConnectionFactory;
 
+            _config = config;
         }
 
         private IKernel GetKernel(ConversationData conversationData, ITurnContext<IMessageActivity> turnContext)
@@ -86,6 +87,7 @@ namespace Microsoft.BotBuilderSamples
                         _aoaiClient
                     )
                     .WithLoggerFactory(loggerFactory)
+                    .WithRetryBasic()
                     .Build();
 
             if (_sqlConnectionFactory != null) kernel.ImportFunctions(new SQLPlugin(conversationData, turnContext, _sqlConnectionFactory), "SQLPlugin");
@@ -123,7 +125,8 @@ namespace Microsoft.BotBuilderSamples
             var stepwiseConfig = new StepwisePlannerConfig
             {
                 GetPromptTemplate = () => _systemMessage,
-                MaxIterations = 5
+                MaxIterations = 5,
+                MaxTokens = 8000,
             };
             _planner = new StepwisePlanner(kernel, stepwiseConfig);
             string prompt = FormatConversationHistory(conversationData);

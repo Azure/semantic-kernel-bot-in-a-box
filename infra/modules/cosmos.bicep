@@ -2,6 +2,7 @@ param location string
 param cosmosName string
 param tags object = {}
 param msiPrincipalID string
+param publicNetworkAccess string
 
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' =  {
   name: cosmosName
@@ -17,6 +18,7 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' =  {
       }
     ]
     databaseAccountOfferType: 'Standard'
+    publicNetworkAccess: publicNetworkAccess
   }
 
   resource db 'sqlDatabases' = {

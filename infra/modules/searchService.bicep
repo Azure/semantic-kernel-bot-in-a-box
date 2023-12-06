@@ -2,6 +2,7 @@ param location string
 param searchName string
 param tags object = {}
 param msiPrincipalID string
+param publicNetworkAccess string
 
 resource search 'Microsoft.Search/searchServices@2023-11-01' = {
   name: searchName
@@ -17,6 +18,7 @@ resource search 'Microsoft.Search/searchServices@2023-11-01' = {
     replicaCount: 1
     partitionCount: 1
     hostingMode: 'default'
+    publicNetworkAccess: publicNetworkAccess
   }
 }
 

@@ -79,7 +79,10 @@ namespace Microsoft.BotBuilderSamples
             var conversationState = new ConversationState(storage);
             services.AddSingleton(conversationState);
 
-            services.AddSingleton(new OpenAIClient(new Uri(configuration.GetValue<string>("AOAI_API_ENDPOINT")), azureCredentials));
+            if (!configuration.GetValue<string>("AOAI_API_KEY").IsNullOrEmpty())
+                services.AddSingleton(new OpenAIClient(new Uri(configuration.GetValue<string>("AOAI_API_ENDPOINT")), new AzureKeyCredential(configuration.GetValue<string>("AOAI_API_KEY"))));
+            else
+                services.AddSingleton(new OpenAIClient(new Uri(configuration.GetValue<string>("AOAI_API_ENDPOINT")), azureCredentials));
             services.AddSingleton(new AzureOpenAITextEmbeddingGeneration(configuration.GetValue<string>("AOAI_EMBEDDINGS_MODEL"), configuration.GetValue<string>("AOAI_API_ENDPOINT"), azureCredentials));
             if (!configuration.GetValue<string>("DOCINTEL_API_ENDPOINT").IsNullOrEmpty())
                 services.AddSingleton(new DocumentAnalysisClient(new Uri(configuration.GetValue<string>("DOCINTEL_API_ENDPOINT")), new AzureKeyCredential(configuration.GetValue<string>("DOCINTEL_API_KEY"))));

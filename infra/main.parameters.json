@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceGroupName": {
-      "value": "${AZURE_ENV_NAME}-rg"
+      "value": "${AZURE_APP_RG}"
     },
     "environmentName": {
       "value": "${AZURE_ENV_NAME}"
@@ -12,10 +12,10 @@
       "value": "${AZURE_LOCATION}"
     },
     "gptModel": {
-      "value": "gpt-4"
+      "value": "${AZURE_GPT_MODEL}"
     },
     "gptVersion": {
-      "value": "0613"
+      "value": "${AZURE_GPT_VERSION}"
     },
     "openaiName": {
       "value": "${AZURE_OPENAI_NAME}"
@@ -54,21 +54,6 @@
         "Environment": "Dev",
         "Toolkit": "Bicep"
       }
-    },
-    "deployDocIntel": {
-      "value": true
-    },
-    "deploySearch": {
-      "value": true
-    },
-    "deploySQL": {
-      "value": true
-    },
-    "deployDalle3": {
-      "value": false
-    },
-    "deployBing": {
-      "value": false
     }
   }
 }

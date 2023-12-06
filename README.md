@@ -38,14 +38,16 @@ The flow of messages is as follows:
 1. Clone this repository locally: 
 
 ```
-git clone https://github.com/Azure/semantic-kernel-bot-in-a-box
+git clone https://github.com/Azure/AI-in-a-Box
+cd semantic-kernel-bot-in-a-box
 ```
-2. In the `infra` directory, look for the file `main.parameters.json`. In this file, you may configure the GPT model to be used, and whether to deploy optional services Document Analysis, AI Search and SQL Server. If you choose to disable them, keep in mind the Upload, Search and SQL Plugins will also be disabled. Also keep in mind [model availability](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models) in your subscription before changing the default deployment region.
-3. Deploy resources
+2. Deploy resources:
 ```
 azd up
 ```
-4. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
+You will be prompted for a subcription, region and model information. Keep regional model availability when proceeding.
+
+3. Test on Web Chat - go to your Azure Bot resource on the Azure portal and look for the Web Chat feature on the left side menu.
 
 ![Test Web Chat](./readme_assets/webchat-test.png)
 
@@ -93,13 +95,6 @@ You may ask about the following topics to test each functionality
 ## Keywords
 
 - Send "clear" to reset the conversation context;
-
-
-## Debugging intermediate thoughts
-
-This project comes with a built-in debug tool that can output the Semantic Kernel Planner's intermediate steps, such as thoughts, actions and observations. You may turn on this feature by switching the DEBUG environment variable to "true".
-
-![Debugging intermidiate thoughts](./readme_assets/webchat-debug.png)
 
 ## Developing your own plugins
 
