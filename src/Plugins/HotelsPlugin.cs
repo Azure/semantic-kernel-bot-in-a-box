@@ -23,7 +23,7 @@ public class HotelsPlugin
 
     
 
-    [SKFunction, Description("Search for hotels by description.")]
+    [KernelFunction, Description("Search for hotels by description.")]
     public async Task<string> FindHotels(
         [Description("The description to be used in the search")] string query
     )

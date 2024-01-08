@@ -31,7 +31,7 @@ param deploySearch bool
 @description('Deploy Document Intelligence service? (required for Upload Plugin demo)')
 param deployDocIntel bool
 param deployDalle3 bool = false
-param deployBing bool = false
+param deployBing bool
 
 @allowed(['Enabled', 'Disabled'])
 param publicNetworkAccess string
@@ -143,6 +143,7 @@ module m_app 'modules/appservice.bicep' = {
     tags: tags
     msiID: m_msi.outputs.msiID
     msiClientID: m_msi.outputs.msiClientID
+    openaiName: m_openai.outputs.openaiName
     openaiEndpoint: m_openai.outputs.openaiEndpoint
     openaiGPTModel: m_openai.outputs.openaiGPTModel
     openaiEmbeddingsModel: m_openai.outputs.openaiEmbeddingsModel

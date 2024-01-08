@@ -12,6 +12,7 @@ param documentIntelligenceName string
 var documentIntelligenceNames = !empty(documentIntelligenceName) ? [documentIntelligenceName] : []
 param bingName string
 var bingNames = !empty(bingName) ? [bingName] : []
+param openaiName string
 
 param openaiEndpoint string
 param searchEndpoint string
@@ -19,9 +20,17 @@ param documentIntelligenceEndpoint string
 param sqlConnectionString string
 param cosmosEndpoint string
 
+
+resource openai 'Microsoft.CognitiveServices/accounts@2023-05-01' existing = {
+  name: openaiName
+}
+
 resource bingAccounts 'Microsoft.Bing/accounts@2020-06-10' existing = [for name in bingNames: {
   name: name
 }]
+resource bingAccount 'Microsoft.Bing/accounts@2020-06-10' existing = {
+  name: bingName
+}
 
 
 resource documentIntelligences 'Microsoft.CognitiveServices/accounts@2023-05-01' existing = [for name in documentIntelligenceNames: {
@@ -70,6 +79,10 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
           value: openaiEndpoint
         }
         {
+          name: 'AOAI_API_KEY'
+          value: openai.listKeys().key1
+        }
+        {
           name: 'AOAI_GPT_MODEL'
           value: openaiGPTModel
         }
@@ -107,7 +120,7 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'BING_API_ENDPOINT'
-          value: !empty(bingName) ? bingAccounts[0].listKeys().key1 : ''
+          value: !empty(bingName) ? 'https://api.bing.microsoft.com/' : ''
         }
         {
           name: 'BING_API_KEY'
@@ -124,6 +137,34 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
         {
           name: 'PROMPT_SUGGESTED_QUESTIONS'
           value: '[]'
+        }
+        {
+          name: 'SSO_ENABLED'
+          value: 'false'
+        }
+        {
+          name: 'SSO_CONFIG_NAME'
+          value: ''
+        }
+        {
+          name: 'SSO_MESSAGE_TITLE'
+          value: 'Please sign in to continue.'
+        }
+        {
+          name: 'SSO_MESSAGE_PROMPT'
+          value: 'Sign in'
+        }
+        {
+          name: 'SSO_MESSAGE_SUCCESS'
+          value: 'User logged in successfully! Please repeat your question.'
+        }
+        {
+          name: 'SSO_MESSAGE_FAILED'
+          value: 'Log in failed. Type anything to retry.'
+        }
+        {
+          name: 'USE_STEPWISE_PLANNER'
+          value: 'true'
         }
       ]
     }
