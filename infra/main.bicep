@@ -22,6 +22,7 @@ param cosmosName string = ''
 param sqlServerName string = ''
 param sqlDBName string = ''
 param searchName string = ''
+param storageName string = ''
 param documentIntelligenceName string = ''
 param bingName string = ''
 @description('Deploy SQL Database? (required for SQL Plugin demo)')
@@ -90,6 +91,18 @@ module m_search 'modules/searchService.bicep' = if (deploySearch) {
   params: {
     location: location
     searchName: !empty(searchName) ? searchName : '${abbrs.searchSearchServices}${environmentName}-${uniqueSuffix}'
+    msiPrincipalID: m_msi.outputs.msiPrincipalID
+    publicNetworkAccess: publicNetworkAccess
+    tags: tags
+  }
+}
+
+module m_storage 'modules/storage.bicep' = if (deploySearch) {
+  name: 'deploy_storage'
+  scope: resourceGroup
+  params: {
+    location: location
+    storageName: !empty(storageName) ? storageName : '${abbrs.storageStorageAccounts}${replace(replace(environmentName,'-',''),'_','')}${uniqueSuffix}'
     msiPrincipalID: m_msi.outputs.msiPrincipalID
     publicNetworkAccess: publicNetworkAccess
     tags: tags

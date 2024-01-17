@@ -95,6 +95,7 @@ You may ask about the following topics to test each functionality
 ## Keywords
 
 - Send "clear" to reset the conversation context;
+- Send "logout" to sign out when SSO is enabled;
 
 ## Developing your own plugins
 
