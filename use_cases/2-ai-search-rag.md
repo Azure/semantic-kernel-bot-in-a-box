@@ -11,6 +11,8 @@ This sample will consider a sample HR Handbook.
 
 ## Recommended deployment parameters
 
+To deploy this solution, use the [Semantic Kernel Bot in-a-box](../README.md) accelerator with the following parameters:
+
     Azure location = East US 2
     gptModel = gpt-4
     gptVersion = 1106-preview

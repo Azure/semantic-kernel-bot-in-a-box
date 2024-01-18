@@ -11,6 +11,8 @@ This sample uses AdventureWorksLT out of the box, and can be customized to your 
 
 ## Recommended deployment parameters
 
+To deploy this solution, use the [Semantic Kernel Bot in-a-box](../README.md) accelerator with the following parameters:
+
     Azure location = East US 2
     gptModel = gpt-4
     gptVersion = 1106-preview
@@ -19,9 +21,13 @@ This sample uses AdventureWorksLT out of the box, and can be customized to your 
 
 ## Deployment validation
 
-Ask the sample questions to verify that the deployment was successful:
+After deployment, you should see the following resources on your Azure subscription.
 
-![SQL connection scenario](../readme_assets/webchat-sql.png)
+![SQL bot resources](../readme_assets/1-resources.png)
+
+Go to the Azure Bot resource and ask the sample questions to verify that the deployment was successful:
+
+![SQL connection scenario](../readme_assets/1-test.png)
 
 ## Customization steps
 
