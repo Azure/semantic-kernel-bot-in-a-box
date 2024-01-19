@@ -1,3 +1,6 @@
+We've moved! Please find the latest version of this solution in the AI-in-a-Box repository: [https://aka.ms/ai-in-a-box](https://aka.ms/ai-in-a-box)
+This repository will be archived on February 2024.
+
 # Semantic Kernel Bot in-a-box
 ![Banner](./readme_assets/banner.png)
 
